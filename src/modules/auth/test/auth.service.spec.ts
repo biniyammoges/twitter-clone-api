@@ -62,7 +62,7 @@ describe('Auth service', () => {
   });
 
   describe('signup', () => {
-    it('return new user', async () => {
+    it('return new tokens', async () => {
       const signupDto: SignUpDto = {
         birthDate: users[0].birthDate,
         email: users[0].email,

@@ -16,14 +16,13 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     });
   }
 
-  async validate(req: Request, paylaod: JwtPayloadWithRt) {
-    const user = await this.authServ.validateUser(paylaod);
-    const refreshToken = req.headers
-      .get('authorization')
-      .replace('Bearer', '')
-      .trim();
+  async validate(req: any, paylaod: JwtPayloadWithRt) {
+    const user = await this.authServ.validateUser(paylaod, true);
+    const refreshToken = req.headers.authorization.split(' ')[1];
 
-    if (!refreshToken || !(await compare(refreshToken, user.refreshToken))) {
+    const isRefreshMatch = await compare(refreshToken, user.refreshToken);
+
+    if (!isRefreshMatch) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 

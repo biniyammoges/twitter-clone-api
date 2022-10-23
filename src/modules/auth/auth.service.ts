@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
-import { Not } from 'typeorm';
+import { toUserDto } from 'src/global/functions';
+import { IsNull, Not } from 'typeorm';
+import { UserDto } from '../user/dtos/user.dto';
 import { UserService } from '../user/services/user.service';
 import {
   JwtPayload,
@@ -23,7 +26,7 @@ export class AuthService {
       where: {
         id: paylaod.sub,
         email: paylaod.email,
-        ...(isRefresh && { refreshToken: Not(null) }),
+        ...(isRefresh && { refreshToken: Not(IsNull()) }),
       },
     });
 
@@ -42,6 +45,7 @@ export class AuthService {
     });
 
     await this.updateRefreshToken(user.id, tokens.refreshToken);
+
     return tokens;
   }
 
@@ -95,6 +99,25 @@ export class AuthService {
     });
   }
 
+  async signOut(userId: string) {
+    const user = await this.userSrv.userRepo.findOneOrFail({
+      where: { id: userId },
+    });
+
+    if (!user.refreshToken) {
+      throw new ConflictException('You are already logged out');
+    }
+
+    await this.userSrv.userRepo.save({ ...user, refreshToken: null });
+  }
+
+  async refreshAccessToken(payload: JwtPayload): Promise<TokenResponse> {
+    const tokens = await this.generateTokens(payload);
+
+    await this.updateRefreshToken(payload.sub, tokens.refreshToken);
+    return tokens;
+  }
+
   async generateTokens(paylaod: JwtPayload): Promise<TokenResponse> {
     const [authToken, refreshToken] = await Promise.all([
       this.jwtServ.signAsync(paylaod, {
@@ -103,10 +126,15 @@ export class AuthService {
       }),
       this.jwtServ.signAsync(paylaod, {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
-        secret: process.env.AUTH_TOKEN_SECRET,
+        secret: process.env.REFRESH_TOKEN_SECRET,
       }),
     ]);
 
     return { authToken, refreshToken };
+  }
+
+  async getProfile(userId: string): Promise<UserDto> {
+    const user = await this.userSrv.userRepo.findOne({ where: { id: userId } });
+    return toUserDto(user);
   }
 }

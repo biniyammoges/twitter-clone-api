@@ -4,6 +4,7 @@ import {
   IsPhoneNumber,
   Length,
   ValidateIf,
+  IsUUID,
 } from 'class-validator';
 
 export class LoginDto {
@@ -21,6 +22,11 @@ export class LoginDto {
 
   @Length(8, 30)
   password: string;
+}
+
+export class SignOutDto {
+  @IsUUID()
+  userId: string;
 }
 
 export class SignUpDto {

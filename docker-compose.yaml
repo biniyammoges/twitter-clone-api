@@ -16,6 +16,18 @@ services:
       - mysql:/var/lib/mysql
     restart: unless-stopped
 
+  #phpmyadmin
+  pma:
+    container_name: phpmyadmin
+    image: phpmyadmin:5.2.0-fpm-alpine
+    environment: 
+      PMA_ARBITRARY: 1
+      PMA_HOST: mysql_db
+      PMA_PORT: 3306
+    depends_on: 
+      - mysql_db
+    restart: always
+
   # backend
   backend:
     build: .
