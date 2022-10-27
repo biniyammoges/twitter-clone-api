@@ -1,5 +1,6 @@
 import { SharedEntity } from '../../../shared/entities/shared.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { File } from 'src/modules/file-upload/file.entity';
 
 @Entity()
 export class User extends SharedEntity {
@@ -28,7 +29,18 @@ export class User extends SharedEntity {
   website?: string;
 
   @Column({ nullable: true })
-  avatar?: string;
+  avatarId?: string;
+
+  @OneToOne(() => File, { nullable: true, eager: true })
+  @JoinColumn({ name: 'avatarId' })
+  avatar?: File;
+
+  @Column({ nullable: true })
+  coverId?: string;
+
+  @OneToOne(() => File, { nullable: true, eager: true })
+  @JoinColumn({ name: 'coverId' })
+  cover?: File;
 
   @Column()
   birthDate: Date;

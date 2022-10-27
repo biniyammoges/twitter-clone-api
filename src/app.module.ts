@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './modules/auth/gurads/at.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { FileUploadModule } from './modules/file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     }),
     UserModule,
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],

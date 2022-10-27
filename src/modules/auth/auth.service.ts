@@ -7,8 +7,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { toUserDto } from 'src/global/functions';
-import { IsNull, Not } from 'typeorm';
-import { UserDto } from '../user/dtos/user.dto';
+import { IsNull, Not, UpdateResult } from 'typeorm';
+import { BufferedFile, File } from '../file-upload/file.entity';
+import { FileUploadService } from '../file-upload/services/file-upload.service';
+import { UpdateUserDto, UserDto } from '../user/dtos/user.dto';
+import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/services/user.service';
 import {
   JwtPayload,
@@ -19,7 +22,11 @@ import {
 
 @Injectable()
 export class AuthService {
-  constructor(private userSrv: UserService, private jwtServ: JwtService) {}
+  constructor(
+    private userSrv: UserService,
+    private jwtServ: JwtService,
+    private fileSrv: FileUploadService,
+  ) {}
 
   async validateUser(paylaod: JwtPayload, isRefresh = false) {
     const user = await this.userSrv.userRepo.findOne({
@@ -136,5 +143,50 @@ export class AuthService {
   async getProfile(userId: string): Promise<UserDto> {
     const user = await this.userSrv.userRepo.findOne({ where: { id: userId } });
     return toUserDto(user);
+  }
+
+  async updateProfile(
+    userId: string,
+    data: UpdateUserDto,
+  ): Promise<UpdateResult> {
+    return this.userSrv.userRepo.update(userId, data);
+  }
+
+  async uploadProfilePhoto(user: User, data: BufferedFile, isAvatar = false) {
+    let file: File;
+
+    const deleteFile = async (id: string) => {
+      await this.fileSrv.fileRepo.delete(id);
+    };
+
+    if (data) {
+      if (!data.mimetype.startsWith('image'))
+        throw new BadRequestException(
+          `File type ${data.mimetype} is not allowed`,
+        );
+
+      file = await this.fileSrv.upload(data);
+      await this.userSrv.userRepo.update(user.id, {
+        ...(isAvatar ? { avatarId: file.id } : { coverId: file.id }),
+      });
+
+      // delete old files
+      if (isAvatar && user.avatarId) deleteFile(user.avatarId);
+      else if (!isAvatar && user.coverId) deleteFile(user.coverId);
+    } else {
+      if (isAvatar && !user.avatarId)
+        throw new BadRequestException('Already no avatar photo');
+      else if (!isAvatar && !user.coverId)
+        throw new BadRequestException('Already no cover photo');
+
+      await Promise.all([
+        this.userSrv.userRepo.update(user.id, {
+          ...(isAvatar ? { avatarId: null } : { coverId: null }),
+        }),
+        deleteFile(isAvatar ? user.avatarId : user.coverId),
+      ]);
+    }
+
+    return data ? file : `deleted ${isAvatar ? 'avatar' : 'cover'} picture`;
   }
 }

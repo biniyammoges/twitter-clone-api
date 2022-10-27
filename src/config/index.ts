@@ -7,6 +7,10 @@ export interface GlobalConfig {
   refreshTokenSecret: string;
   authTokenExpire: string;
   refreshTokenExpire: string;
+  s3Endpoint: string;
+  s3Port: number;
+  s3AccessKey: string;
+  s3SecretKey: string;
 }
 
 const GlobalConfigSchema = Joi.object<GlobalConfig>({
@@ -26,6 +30,10 @@ export const globalConfig = registerAs('global', () => {
     authTokenSecret: process.env.AUTH_TOKEN_SECRET,
     refreshTokenExpire: process.env.REFRESH_TOKEN_EXPIRE,
     refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
+    s3Endpoint: process.env.S3_ENDPOINT,
+    s3Port: +process.env.S3_PORT,
+    s3AccessKey: process.env.S3_ACCESS_KEY,
+    s3SecretKey: process.env.S3_SECRET_KEY,
   };
 
   console.log(`Loading global config for enviroment '${cfg.appEnv}'`);

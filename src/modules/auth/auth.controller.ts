@@ -5,11 +5,16 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { GetUser } from 'src/shared/decorators/current-user.decorator';
 import { IsPublic } from 'src/shared/decorators/public.decorator';
-import { UserDto } from '../user/dtos/user.dto';
+import { BufferedFile } from '../file-upload/file.entity';
+import { UpdateUserDto, UserDto } from '../user/dtos/user.dto';
 import { User } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
 import { LoginDto, SignUpDto, TokenResponse } from './dtos/auth.dto';
@@ -54,5 +59,28 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async profile(@GetUser('id') userId: string): Promise<UserDto> {
     return this.authServ.getProfile(userId);
+  }
+
+  @Post('profile/avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  @HttpCode(HttpStatus.OK)
+  async uploadAvatar(
+    @GetUser() user: User,
+    @UploadedFile() data: BufferedFile,
+  ) {
+    return this.authServ.uploadProfilePhoto(user, data, true);
+  }
+
+  @Post('profile/cover')
+  @UseInterceptors(FileInterceptor('cover'))
+  @HttpCode(HttpStatus.OK)
+  async uploadCover(@GetUser() user: User, @UploadedFile() data: BufferedFile) {
+    return this.authServ.uploadProfilePhoto(user, data);
+  }
+
+  @Put('profile/update')
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(@GetUser('id') userId: string, data: UpdateUserDto) {
+    return this.authServ.updateProfile(userId, data);
   }
 }

@@ -12,6 +12,9 @@ export const toUserDto = (user: User): UserDto => ({
   location: user.location,
   website: user.website,
   avatar: user.avatar,
+  avatarId: user.avatarId,
+  cover: user.cover,
+  coverId: user.coverId,
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
 });
