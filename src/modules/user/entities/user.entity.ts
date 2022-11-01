@@ -1,6 +1,7 @@
 import { SharedEntity } from '../../../shared/entities/shared.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { File } from 'src/modules/file-upload/file.entity';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { File } from '../../file-upload/file.entity';
+import { Follower } from './follower.entity';
 
 @Entity()
 export class User extends SharedEntity {
@@ -50,4 +51,10 @@ export class User extends SharedEntity {
 
   @Column({ nullable: true })
   fcmToken?: string;
+
+  @OneToMany(() => Follower, (follower) => follower.followeeId)
+  followers?: Follower[];
+
+  @OneToMany(() => Follower, (follower) => follower.followerId)
+  following?: Follower[];
 }

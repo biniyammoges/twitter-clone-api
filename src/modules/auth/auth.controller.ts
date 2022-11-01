@@ -11,8 +11,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { GetUser } from 'src/shared/decorators/current-user.decorator';
-import { IsPublic } from 'src/shared/decorators/public.decorator';
+import { GetUser } from '../../shared/decorators/current-user.decorator';
+import { IsPublic } from '../../shared/decorators/public.decorator';
 import { BufferedFile } from '../file-upload/file.entity';
 import { UpdateUserDto, UserDto } from '../user/dtos/user.dto';
 import { User } from '../user/entities/user.entity';

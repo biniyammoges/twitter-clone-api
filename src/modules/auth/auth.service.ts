@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
-import { toUserDto } from 'src/global/functions';
+import { toUserDto } from '../../global/functions';
 import { IsNull, Not, UpdateResult } from 'typeorm';
 import { BufferedFile, File } from '../file-upload/file.entity';
 import { FileUploadService } from '../file-upload/services/file-upload.service';

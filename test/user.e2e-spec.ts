@@ -1,15 +1,17 @@
 import * as request from 'supertest';
-import { NestApplication } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthModule } from 'src/modules/auth/auth.module';
-import { HttpStatus } from '@nestjs/common';
+import { UserModule } from '../src/modules/user/user.module';
+import { HttpStatus, INestApplication } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ds } from '../src/typeorm-ds';
+import { AppModule } from '../src/app.module';
 
-describe('Authentication', async () => {
-  let app: NestApplication;
+describe('Authentication', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
     let moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
+      imports: [AppModule, TypeOrmModule.forRoot(ds)],
     }).compile();
     app = moduleFixture.createNestApplication();
     await app.init();

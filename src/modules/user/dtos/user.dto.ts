@@ -1,4 +1,4 @@
-import { IsDate, IsOptional, IsUrl, Length } from 'class-validator';
+import { IsDate, IsOptional, IsString, IsUrl, Length } from 'class-validator';
 import { File } from 'src/modules/file-upload/file.entity';
 
 export type UserDto = {
@@ -37,4 +37,9 @@ export class UpdateUserDto {
 
   @IsDate()
   birthDate: Date;
+}
+
+export class SearchUserDto {
+  @IsString()
+  keyword: string;
 }

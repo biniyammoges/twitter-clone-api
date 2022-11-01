@@ -1,4 +1,4 @@
-import { SharedEntity } from 'src/shared/entities/shared.entity';
+import { SharedEntity } from '../../shared/entities/shared.entity';
 import { Column, Entity } from 'typeorm';
 
 export interface BufferedFile {

@@ -1,13 +1,22 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignUpDto } from 'src/modules/auth/dtos/auth.dto';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { hash } from 'bcrypt';
+import { Follower } from '../entities/follower.entity';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) public userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) public userRepo: Repository<User>,
+    @InjectRepository(Follower) private followerRepo: Repository<Follower>,
+  ) {}
 
   private logger = new Logger(UserService.name);
 
@@ -66,5 +75,46 @@ export class UserService {
         password: await hash(data.password, 10),
       }),
     );
+  }
+
+  async manageFollow(
+    follower: User,
+    followeeUsername: string,
+    follow = false,
+  ): Promise<Follower | DeleteResult> {
+    const followee = await this.userRepo.findOne({
+      where: { username: followeeUsername },
+    });
+
+    if (!followee) {
+      throw new BadRequestException(
+        `User not found with username ${followeeUsername}`,
+      );
+    }
+
+    const alreadyFollowing = await this.followerRepo.findOne({
+      where: { followeeId: followee.id, followerId: follower.id },
+    });
+
+    if (follow) {
+      if (alreadyFollowing) {
+        throw new ConflictException(
+          `You are already following ${followee.name}`,
+        );
+      }
+
+      return this.followerRepo.save(
+        this.followerRepo.create({
+          followeeId: followee.id,
+          followerId: follower.id,
+        }),
+      );
+    } else {
+      if (!alreadyFollowing) {
+        throw new ConflictException(`You are not following ${followee.name}`);
+      }
+
+      return this.followerRepo.delete({ ...alreadyFollowing });
+    }
   }
 }

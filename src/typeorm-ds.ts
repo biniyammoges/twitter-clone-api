@@ -18,13 +18,14 @@ let entities: DataSourceOptions['entities'] = [
 
 export const ds: DataSourceOptions = {
   type: 'mysql',
-  host: 'mysql_db',
-  username: 'user',
-  password: 'password',
+  host: process.env.DB_HOST,
+  username: process.env.DB_USERNAME,
+  port: +process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
   logger: 'debug',
-  synchronize: true, //appEnv === 'test',
+  synchronize: appEnv === 'test',
   entities,
-  database: 'db',
+  database: process.env.DB_NAME,
   subscribers: [],
   migrations: [],
 };
